@@ -5,12 +5,10 @@ import { jwtVerify } from "jose";
 /*
  * Read more: https://nextjs.org/docs/app/building-your-application/routing/middleware
  */
-
 export async function middleware(request: NextRequest) {
   const cookie = request.cookies.get("token-auth");
 
-  if (cookie == undefined)
-    return NextResponse.redirect(new URL("/login", request.url));
+  if (!cookie) return NextResponse.redirect(new URL("/login", request.url));
 
   try {
     await jwtVerify(cookie.value, new TextEncoder().encode("secret"));
