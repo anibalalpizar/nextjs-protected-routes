@@ -1,31 +1,16 @@
 import { serialize } from "cookie";
 import { verify } from "jsonwebtoken";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-export async function POST(req: Request) {
-  // plain text cookie header
-  const cookieHeader = req.headers.get("cookie");
-
-  console.log(cookieHeader);
-
-  if (!cookieHeader)
-    return NextResponse.json(
-      { message: "No cookies present" },
-      { status: 401 }
-    );
-
-  // convert plain text cookie header to object
-  const cookies = Object.fromEntries(
-    cookieHeader.split(";").map((cookie) => cookie.trim().split("="))
-  );
-
-  const token = cookies["token-auth"];
+export async function POST(req: NextRequest) {
+  const token = req.cookies.get("token-auth");
 
   if (!token)
-    return NextResponse.json({ message: "Token not found" }, { status: 401 });
+    return NextResponse.json({ message: "No token present" }, { status: 401 });
 
   try {
-    verify(token, "secret");
+    verify(token.value, "secret");
     const serializedToken = serialize("token-auth", "", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
