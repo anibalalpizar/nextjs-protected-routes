@@ -2,23 +2,23 @@
 
 import { useState } from "react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 function LoginPage() {
   const [credentials, setCredentials] = useState({
     email: "",
     password: "",
   });
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.name, e.target.value);
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Submit", credentials);
-    const res = await axios.post("/api/auth", credentials);
-    console.log("Response", res);
+    const res = await axios.post("/api/auth/login", credentials);
+    if (res.status === 200) router.push("/dashboard");
   };
 
   return (
