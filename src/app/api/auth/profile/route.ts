@@ -1,30 +1,18 @@
 import type { UserPayload } from "@/types/types";
 import { verify } from "jsonwebtoken";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-export async function GET(req: Request) {
-  // plain text cookie header
-  const cookieHeader = req.headers.get("cookie");
-
-  if (!cookieHeader)
-    return NextResponse.json(
-      { message: "No cookies present" },
-      { status: 401 }
-    );
-
-  // convert plain text cookie header to object
-  const cookies = Object.fromEntries(
-    cookieHeader.split(";").map((cookie) => cookie.trim().split("="))
-  );
-
-  const token = cookies["token-auth"];
+export async function GET(req: NextRequest) {
+  const token = req.cookies.get("token-auth");
 
   if (!token)
-    return NextResponse.json({ message: "Token not found" }, { status: 401 });
+    return NextResponse.json({ message: "No token present" }, { status: 401 });
 
   try {
-    const user = verify(token, "secret") as UserPayload;
-    return NextResponse.json({ email: user.email }, { status: 200 });
+    const { email } = verify(token.value, "secret") as UserPayload;
+
+    return NextResponse.json({ email }, { status: 200 });
   } catch (e) {
     if (e instanceof Error)
       return NextResponse.json(
